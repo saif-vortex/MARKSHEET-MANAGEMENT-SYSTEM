@@ -8,8 +8,7 @@ import marks
 
 def start_app():
 
-    # ---------------- MAIN WINDOW ----------------
-
+    # MAIN WINDOW
     r = tk.Tk()
     r.title("MARKSHEET MANAGEMENT SYSTEM")
     r.geometry("1200x700")
@@ -22,8 +21,7 @@ def start_app():
     text_color = "#1E293B"
     accent_color = "#2563EB"
 
-    # ---------------- MAIN LAYOUT ----------------
-
+    # MAIN LAYOUT
     sidebar = tk.Frame(r, bg=sidebar_color, width=250)
     sidebar.pack(side="left", fill="y")
     sidebar.pack_propagate(False)
@@ -31,8 +29,7 @@ def start_app():
     content = tk.Frame(r, bg=bg_color)
     content.pack(side="right", fill="both", expand=True)
 
-    # ---------------- SIDEBAR TITLE ----------------
-
+    # SIDEBAR TITLE
     tk.Label(
         sidebar,
         text="STUDENT\nMARKSHEET",
@@ -50,8 +47,7 @@ def start_app():
         fg="#93C5FD"
     ).pack(anchor="w", padx=20, pady=(0, 25))
 
-    # ---------------- PAGE CONTAINER ----------------
-
+    # PAGE CONTAINER
     page_frame = tk.Frame(content, bg=bg_color)
     page_frame.pack(fill="both", expand=True, padx=25, pady=25)
 
@@ -85,13 +81,7 @@ def start_app():
             highlightbackground=color,
             highlightthickness=1
         )
-
-        card.pack(
-            side="left",
-            fill="both",
-            expand=True,
-            padx=10
-        )
+        card.pack(side="left", fill="both", expand=True, padx=10)
 
         tk.Label(
             card,
@@ -173,14 +163,12 @@ def start_app():
         )
 
         tree.configure(yscrollcommand=scrollbar.set)
-
         tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
         return tree
 
-    # ---------------- DASHBOARD ----------------
-
+    # DASHBOARD
     def show_dashboard():
         clear_page()
         page_title(
@@ -205,50 +193,11 @@ def start_app():
         cards = tk.Frame(page_frame, bg=bg_color)
         cards.pack(fill="x", pady=20)
 
-        create_card(
-            cards, "Total Students",
-            str(total_students), "#2563EB"
-        )
+        create_card(cards, "Total Students", str(total_students), "#2563EB")
+        create_card(cards, "Total Subjects", str(total_subjects), "#16A34A")
+        create_card(cards, "Marks Records", str(total_marks), "#9333EA")
 
-        create_card(
-            cards, "Total Subjects",
-            str(total_subjects), "#16A34A"
-        )
-
-        create_card(
-            cards, "Marks Records",
-            str(total_marks), "#9333EA"
-        )
-
-        welcome = tk.Frame(
-            page_frame,
-            bg=card_color,
-            padx=25,
-            pady=25
-        )
-        welcome.pack(fill="x", pady=25)
-
-        tk.Label(
-            welcome,
-            text="Welcome!",
-            font=("Arial", 18, "bold"),
-            bg=card_color,
-            fg=text_color
-        ).pack(anchor="w")
-
-        tk.Label(
-            welcome,
-            text=(
-                "Use the sidebar to manage students, "
-                "subjects, marks and marksheets."
-            ),
-            font=("Arial", 11),
-            bg=card_color,
-            fg="#64748B"
-        ).pack(anchor="w", pady=10)
-
-    # ---------------- ADD STUDENT ----------------
-
+    # ADD STUDENT
     def show_add_student():
         clear_page()
         page_title("Add Student", "Register a new student")
@@ -275,9 +224,7 @@ def start_app():
             semester = semester_entry.get().strip()
 
             if not name or not roll or not department or not semester:
-                messagebox.showerror(
-                    "Error", "Please fill all fields."
-                )
+                messagebox.showerror("Error", "Please fill all fields.")
                 return
 
             try:
@@ -286,15 +233,7 @@ def start_app():
                 if semester_number < 1:
                     raise ValueError
 
-            except ValueError:
-                messagebox.showerror(
-                    "Error", "Enter a valid semester number."
-                )
-                return
-
-            conn = database.connect_db()
-
-            try:
+                conn = database.connect_db()
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -307,25 +246,22 @@ def start_app():
                 )
 
                 conn.commit()
+                conn.close()
 
-                messagebox.showinfo(
-                    "Success", "Student added successfully!"
-                )
-
+                messagebox.showinfo("Success", "Student added successfully!")
                 show_add_student()
+
+            except ValueError:
+                messagebox.showerror("Error", "Enter a valid semester.")
 
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-            finally:
-                conn.close()
+        create_button(form, "Save Student", save_student).pack(
+            anchor="w", pady=20
+        )
 
-        create_button(
-            form, "Save Student", save_student
-        ).pack(anchor="w", pady=20)
-
-    # ---------------- VIEW STUDENTS ----------------
-
+    # VIEW STUDENTS
     def show_view_students():
         clear_page()
         page_title("View Students", "All registered students")
@@ -336,14 +272,16 @@ def start_app():
             ("ID", "Name", "Roll Number", "Department", "Semester")
         )
 
-        for record in student.get_all_students():
-            tree.insert("", "end", values=record)
+        try:
+            for record in student.get_all_students():
+                tree.insert("", "end", values=record)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
 
-    # ---------------- SEARCH STUDENT ----------------
-
+    # SEARCH STUDENT
     def show_search_student():
         clear_page()
-        page_title("Search Student", "Find a student using roll number")
+        page_title("Search Student", "Find student using roll number")
 
         form = create_form(page_frame)
 
@@ -360,9 +298,7 @@ def start_app():
             roll = roll_entry.get().strip()
 
             if not roll:
-                messagebox.showerror(
-                    "Error", "Enter a roll number."
-                )
+                messagebox.showerror("Error", "Enter a roll number.")
                 return
 
             conn = database.connect_db()
@@ -377,23 +313,13 @@ def start_app():
             conn.close()
 
             if record:
-                tk.Label(
-                    result_frame,
-                    text="Student Found",
-                    font=("Arial", 15, "bold"),
-                    bg=bg_color,
-                    fg="#16A34A"
-                ).pack(anchor="w", pady=10)
-
-                details = (
+                for label, value in [
                     ("Student ID", record[0]),
                     ("Name", record[1]),
                     ("Roll Number", record[2]),
                     ("Department", record[3]),
                     ("Semester", record[4])
-                )
-
-                for label, value in details:
+                ]:
                     tk.Label(
                         result_frame,
                         text=f"{label}: {value}",
@@ -401,28 +327,24 @@ def start_app():
                         bg=bg_color,
                         fg=text_color
                     ).pack(anchor="w", pady=4)
-
             else:
-                messagebox.showinfo(
-                    "Not Found", "No student found with this roll number."
-                )
+                messagebox.showinfo("Not Found", "Student not found.")
 
-        create_button(
-            form, "Search Student", search
-        ).pack(anchor="w", pady=20)
+        create_button(form, "Search Student", search).pack(
+            anchor="w", pady=20
+        )
 
-    # ---------------- UPDATE STUDENT ----------------
-
+    # UPDATE STUDENT
     def show_update_student():
         clear_page()
-        page_title("Update Student", "Update existing student information")
+        page_title("Update Student", "Update student information")
 
         form = create_form(page_frame)
 
-        create_label(form, "Roll Number of Student")
+        create_label(form, "Roll Number")
         roll_entry = create_entry(form)
 
-        create_label(form, "New Student Name")
+        create_label(form, "New Name")
         name_entry = create_entry(form)
 
         create_label(form, "New Department")
@@ -437,10 +359,8 @@ def start_app():
             department = department_entry.get().strip()
             semester = semester_entry.get().strip()
 
-            if not roll or not name or not department or not semester:
-                messagebox.showerror(
-                    "Error", "Please fill all fields."
-                )
+            if not all([roll, name, department, semester]):
+                messagebox.showerror("Error", "Please fill all fields.")
                 return
 
             try:
@@ -449,15 +369,7 @@ def start_app():
                 if semester_number < 1:
                     raise ValueError
 
-            except ValueError:
-                messagebox.showerror(
-                    "Error", "Enter a valid semester."
-                )
-                return
-
-            conn = database.connect_db()
-
-            try:
+                conn = database.connect_db()
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -472,43 +384,38 @@ def start_app():
                 conn.commit()
 
                 if cursor.rowcount > 0:
-                    messagebox.showinfo(
-                        "Success", "Student updated successfully!"
-                    )
+                    messagebox.showinfo("Success", "Student updated!")
                     show_update_student()
                 else:
-                    messagebox.showinfo(
-                        "Not Found", "Student does not exist."
-                    )
+                    messagebox.showinfo("Not Found", "Student not found.")
+
+                conn.close()
+
+            except ValueError:
+                messagebox.showerror("Error", "Invalid semester.")
 
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-            finally:
-                conn.close()
+        create_button(form, "Update Student", update).pack(
+            anchor="w", pady=20
+        )
 
-        create_button(
-            form, "Update Student", update
-        ).pack(anchor="w", pady=20)
-
-    # ---------------- DELETE STUDENT ----------------
-
+    # DELETE STUDENT
     def show_delete_student():
         clear_page()
         page_title("Delete Student", "Remove a student record")
 
         form = create_form(page_frame)
 
-        create_label(form, "Enter Student Roll Number")
+        create_label(form, "Enter Roll Number")
         roll_entry = create_entry(form)
 
         def delete():
             roll = roll_entry.get().strip()
 
             if not roll:
-                messagebox.showerror(
-                    "Error", "Enter a roll number."
-                )
+                messagebox.showerror("Error", "Enter a roll number.")
                 return
 
             confirm = messagebox.askyesno(
@@ -520,39 +427,28 @@ def start_app():
                 return
 
             conn = database.connect_db()
+            cursor = conn.cursor()
 
-            try:
-                cursor = conn.cursor()
+            cursor.execute(
+                "DELETE FROM Students WHERE roll_no = ?",
+                (roll,)
+            )
 
-                cursor.execute(
-                    "DELETE FROM Students WHERE roll_no = ?",
-                    (roll,)
-                )
+            conn.commit()
 
-                conn.commit()
+            if cursor.rowcount > 0:
+                messagebox.showinfo("Success", "Student deleted!")
+                show_delete_student()
+            else:
+                messagebox.showinfo("Not Found", "Student not found.")
 
-                if cursor.rowcount > 0:
-                    messagebox.showinfo(
-                        "Success", "Student deleted successfully!"
-                    )
-                    show_delete_student()
-                else:
-                    messagebox.showinfo(
-                        "Not Found", "Student does not exist."
-                    )
+            conn.close()
 
-            except Exception as e:
-                messagebox.showerror("Error", str(e))
+        create_button(form, "Delete Student", delete, "#DC2626").pack(
+            anchor="w", pady=20
+        )
 
-            finally:
-                conn.close()
-
-        create_button(
-            form, "Delete Student", delete, "#DC2626"
-        ).pack(anchor="w", pady=20)
-
-    # ---------------- MANAGE MARKS ----------------
-
+    # MANAGE MARKS
     def show_manage_marks():
         clear_page()
         page_title("Manage Marks", "Add or update student marks")
@@ -575,8 +471,7 @@ def start_app():
         conn.close()
 
         subject_values = [
-            f"{s[0]} - {s[1]} (Total: {s[2]})"
-            for s in subjects
+            f"{s[0]} - {s[1]} (Total: {s[2]})" for s in subjects
         ]
 
         subject_combo = ttk.Combobox(
@@ -596,24 +491,14 @@ def start_app():
             obtained = obtained_entry.get().strip()
 
             if not roll or not selected or not obtained:
-                messagebox.showerror(
-                    "Error", "Please fill all fields."
-                )
+                messagebox.showerror("Error", "Please fill all fields.")
                 return
 
             try:
                 subject_id = int(selected.split(" - ")[0])
                 obtained_marks = float(obtained)
 
-            except ValueError:
-                messagebox.showerror(
-                    "Error", "Enter valid marks."
-                )
-                return
-
-            conn = database.connect_db()
-
-            try:
+                conn = database.connect_db()
                 cursor = conn.cursor()
 
                 cursor.execute(
@@ -623,9 +508,8 @@ def start_app():
                 student_record = cursor.fetchone()
 
                 if not student_record:
-                    messagebox.showerror(
-                        "Error", "Student not found."
-                    )
+                    conn.close()
+                    messagebox.showerror("Error", "Student not found.")
                     return
 
                 cursor.execute(
@@ -635,14 +519,14 @@ def start_app():
                 subject_record = cursor.fetchone()
 
                 if not subject_record:
-                    messagebox.showerror(
-                        "Error", "Subject not found."
-                    )
+                    conn.close()
+                    messagebox.showerror("Error", "Subject not found.")
                     return
 
                 total_marks = subject_record[0]
 
                 if obtained_marks < 0 or obtained_marks > total_marks:
+                    conn.close()
                     messagebox.showerror(
                         "Error",
                         f"Marks must be between 0 and {total_marks}."
@@ -664,8 +548,7 @@ def start_app():
                 if existing:
                     cursor.execute(
                         """
-                        UPDATE Marks
-                        SET obtained_marks = ?
+                        UPDATE Marks SET obtained_marks = ?
                         WHERE student_id = ? AND subject_id = ?
                         """,
                         (obtained_marks, student_id, subject_id)
@@ -681,25 +564,19 @@ def start_app():
                     )
 
                 conn.commit()
+                conn.close()
 
-                messagebox.showinfo(
-                    "Success", "Marks saved successfully!"
-                )
-
+                messagebox.showinfo("Success", "Marks saved successfully!")
                 obtained_entry.delete(0, tk.END)
 
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-            finally:
-                conn.close()
+        create_button(form, "Save Marks", save_marks).pack(
+            anchor="w", pady=20
+        )
 
-        create_button(
-            form, "Save Marks", save_marks
-        ).pack(anchor="w", pady=20)
-
-    # ---------------- GENERATE MARKSHEET ----------------
-
+    # GENERATE MARKSHEET
     def show_marksheet():
         clear_page()
         page_title("Generate Marksheet", "View a student's complete result")
@@ -719,140 +596,159 @@ def start_app():
             roll = roll_entry.get().strip()
 
             if not roll:
-                messagebox.showerror(
-                    "Error", "Enter a roll number."
-                )
+                messagebox.showerror("Error", "Enter a roll number.")
                 return
 
-            conn = database.connect_db()
-            cursor = conn.cursor()
+            conn = None
 
-            cursor.execute(
-                "SELECT * FROM Students WHERE roll_no = ?",
-                (roll,)
-            )
+            try:
+                conn = database.connect_db()
+                cursor = conn.cursor()
 
-            record = cursor.fetchone()
-            conn.close()
+                cursor.execute(
+                    "SELECT * FROM Students WHERE roll_no = ?",
+                    (roll,)
+                )
+
+                record = cursor.fetchone()
+
+            except Exception as e:
+                messagebox.showerror("Database Error", str(e))
+                return
+
+            finally:
+                if conn:
+                    conn.close()
 
             if not record:
-                messagebox.showerror(
-                    "Not Found", "Student does not exist."
-                )
+                messagebox.showerror("Not Found", "Student not found.")
                 return
 
-            student_id = record[0]
-            student_marks = marks.get_student_marks(student_id)
+            try:
+                student_id = record[0]
+                student_marks = marks.get_student_marks(student_id)
 
-            if not student_marks:
-                messagebox.showinfo(
-                    "No Marks", "No marks have been entered for this student."
-                )
-                return
-
-            tk.Label(
-                result_frame,
-                text=f"Name: {record[1]}",
-                font=("Arial", 12, "bold"),
-                bg=bg_color,
-                fg=text_color
-            ).pack(anchor="w", pady=3)
-
-            tk.Label(
-                result_frame,
-                text=f"Roll Number: {record[2]}",
-                font=("Arial", 11),
-                bg=bg_color,
-                fg=text_color
-            ).pack(anchor="w", pady=3)
-
-            tk.Label(
-                result_frame,
-                text=f"Department: {record[3]}",
-                font=("Arial", 11),
-                bg=bg_color,
-                fg=text_color
-            ).pack(anchor="w", pady=3)
-
-            tree = create_table(
-                result_frame,
-                ("subject", "obtained", "total", "grade"),
-                ("Subject", "Obtained Marks", "Total Marks", "Grade")
-            )
-
-            for subject_name, total, obtained in student_marks:
-                percentage = (
-                    (obtained / total) * 100 if total else 0
-                )
-
-                grade, cgpa = marks.calculate_grade(percentage)
-
-                tree.insert(
-                    "",
-                    "end",
-                    values=(
-                        subject_name,
-                        obtained,
-                        total,
-                        grade
+                if not student_marks:
+                    messagebox.showinfo(
+                        "No Marks",
+                        "No marks entered for this student."
                     )
+                    return
+
+                # STUDENT INFORMATION
+                info_frame = tk.Frame(
+                    result_frame,
+                    bg=card_color,
+                    padx=20,
+                    pady=15
+                )
+                info_frame.pack(fill="x", pady=10)
+
+                for detail in [
+                    f"Student Name: {record[1]}",
+                    f"Roll Number: {record[2]}",
+                    f"Department: {record[3]}",
+                    f"Semester: {record[4]}"
+                ]:
+                    tk.Label(
+                        info_frame,
+                        text=detail,
+                        font=("Arial", 11, "bold"),
+                        bg=card_color,
+                        fg=text_color
+                    ).pack(anchor="w", pady=3)
+
+                # SUBJECT-WISE RESULTS
+                tk.Label(
+                    result_frame,
+                    text="SUBJECT-WISE RESULTS",
+                    font=("Arial", 15, "bold"),
+                    bg=bg_color,
+                    fg=text_color
+                ).pack(anchor="w", pady=10)
+
+                tree = create_table(
+                    result_frame,
+                    ("subject", "obtained", "total", "percentage", "grade", "gpa"),
+                    ("Subject", "Obtained", "Total", "Percentage", "Grade", "GPA")
                 )
 
-            total_obtained, total_marks, overall_grade, cgpa = (
-                marks.calculate_results(student_marks)
-            )
+                for subject_name, total, obtained in student_marks:
+                    percentage = (obtained / total) * 100 if total else 0
 
-            percentage = (
-                (total_obtained / total_marks) * 100
-                if total_marks else 0
-            )
+                    grade, subject_gpa = marks.calculate_grade(percentage)
 
-            summary = tk.Frame(
-                result_frame,
-                bg=card_color,
-                padx=20,
-                pady=15
-            )
-            summary.pack(fill="x", pady=10)
+                    tree.insert(
+                        "",
+                        "end",
+                        values=(
+                            subject_name,
+                            obtained,
+                            total,
+                            f"{percentage:.2f}%",
+                            grade,
+                            f"{subject_gpa:.2f}"
+                        )
+                    )
 
-            tk.Label(
-                summary,
-                text=f"Total Obtained: {total_obtained} / {total_marks}",
-                font=("Arial", 12, "bold"),
-                bg=card_color,
-                fg=text_color
-            ).pack(anchor="w", pady=3)
+                # OVERALL RESULT FROM marks.py
+                total_obtained, total_marks, overall_grade, total_gpa = (
+                    marks.calculate_results(student_marks)
+                )
+                tk.Label(
+                        info_frame,
+                        text=f"TOTAL CGPA: {total_gpa:.2f} / 4.0",
+                        font=("Arial", 12, "bold"),
+                        bg="white",
+                        fg="#172554"
+                    ).pack(anchor="w", pady=5)
+                
+                percentage = (
+                    (total_obtained / total_marks) * 100
+                    if total_marks else 0
+                )
 
-            tk.Label(
-                summary,
-                text=f"Percentage: {percentage:.2f}%",
-                font=("Arial", 12, "bold"),
-                bg=card_color,
-                fg=text_color
-            ).pack(anchor="w", pady=3)
+                # SUMMARY
+                summary = tk.Frame(
+                    result_frame,
+                    bg=card_color,
+                    padx=20,
+                    pady=15
+                )
+                summary.pack(fill="x", pady=10)
 
-            tk.Label(
-                summary,
-                text=f"Overall Grade: {overall_grade}",
-                font=("Arial", 12, "bold"),
-                bg=card_color,
-                fg=text_color
-            ).pack(anchor="w", pady=3)
+                tk.Label(
+                    summary,
+                    text="OVERALL RESULT",
+                    font=("Arial", 15, "bold"),
+                    bg=card_color,
+                    fg=accent_color
+                ).pack(anchor="w", pady=(0, 10))
 
-            tk.Label(
-                summary,
-                text=f"CGPA: {cgpa}",
-                font=("Arial", 12, "bold"),
-                bg=card_color,
-                fg=text_color
-            ).pack(anchor="w", pady=3)
+                results = [
+                    f"Total Obtained Marks: {total_obtained} / {total_marks}",
+                    f"Percentage: {percentage:.2f}%",
+                    f"Overall Grade: {overall_grade}",
+                    f"Total GPA: {total_gpa:.2f} / 4.0"
+                ]
 
-        create_button(
-            form, "Generate Marksheet", generate
-        ).pack(anchor="w", pady=20)
+                for line in results:
+                    tk.Label(
+                        summary,
+                        text=line,
+                        font=("Arial", 12, "bold"),
+                        bg=card_color,
+                        fg=text_color
+                    ).pack(anchor="w", pady=4)
 
-    # ---------------- SIDEBAR NAVIGATION ----------------
+            except Exception as e:
+                messagebox.showerror("Marksheet Error", str(e))
 
+        create_button(form, "Generate Marksheet", generate).pack(
+            anchor="w", pady=20
+        )
+
+    # SIDEBAR NAVIGATION
     def create_nav_button(text, command):
         button = tk.Button(
             sidebar,
@@ -869,10 +765,7 @@ def start_app():
             pady=12,
             cursor="hand2"
         )
-
         button.pack(fill="x", padx=8, pady=2)
-
-        return button
 
     create_nav_button("Dashboard", show_dashboard)
     create_nav_button("Add Student", show_add_student)
@@ -882,8 +775,6 @@ def start_app():
     create_nav_button("Delete Student", show_delete_student)
     create_nav_button("Manage Marks", show_manage_marks)
     create_nav_button("Generate Marksheet", show_marksheet)
-
-    # ---------------- START APPLICATION ----------------
 
     show_dashboard()
     r.mainloop()

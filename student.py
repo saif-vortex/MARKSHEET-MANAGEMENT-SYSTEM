@@ -10,6 +10,7 @@ def add_student(name, roll_no, department, semester):
     cursor = connection.cursor()
 
     try:
+
         cursor.execute("""
         INSERT INTO Students
         (name, roll_no, department, semester)
@@ -18,10 +19,11 @@ def add_student(name, roll_no, department, semester):
 
         connection.commit()
 
-        return True
+        print("Student registered successfully!")
 
     except sqlite3.IntegrityError:
-        return False
+
+        print("Error: Roll number already exists!")
 
     finally:
         connection.close()
@@ -53,10 +55,13 @@ def display_students():
     print("\n========== REGISTERED STUDENTS ==========")
 
     if len(students) == 0:
+
         print("No student records found!")
 
     else:
+
         for student in students:
+
             print("\nStudent ID:", student[0])
             print("Name:", student[1])
             print("Roll Number:", student[2])
@@ -124,11 +129,13 @@ def update_student(roll_no, name, department, semester):
 
     connection.commit()
 
-    updated = cursor.rowcount > 0
+    if cursor.rowcount > 0:
+        print("Student information updated successfully!")
+
+    else:
+        print("Student not found!")
 
     connection.close()
-
-    return updated
 
 
 # 7. Delete student record
@@ -144,11 +151,13 @@ def delete_student(roll_no):
 
     connection.commit()
 
-    deleted = cursor.rowcount > 0
+    if cursor.rowcount > 0:
+        print("Student deleted successfully!")
+
+    else:
+        print("Student not found!")
 
     connection.close()
-
-    return deleted
 
 
 # Testing section
